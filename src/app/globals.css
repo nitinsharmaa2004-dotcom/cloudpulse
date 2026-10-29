@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+  .dark {
+    color-scheme: dark;
+  }
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    @apply bg-zinc-50 text-zinc-900 dark:bg-[#07080c] dark:text-zinc-100;
+  }
+  ::selection {
+    @apply bg-brand-500/20;
+  }
+  :focus-visible {
+    @apply outline-none ring-2 ring-brand-500/60 ring-offset-2 ring-offset-white dark:ring-offset-[#07080c];
+  }
+}
+
+@layer components {
+  .glass {
+    @apply border border-zinc-200/80 bg-white/70 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_-12px_rgba(16,24,40,0.08)] backdrop-blur-xl dark:border-white/[0.08] dark:bg-white/[0.03] dark:shadow-none;
+  }
+  .text-gradient {
+    @apply bg-gradient-to-br from-zinc-900 via-zinc-700 to-zinc-500 bg-clip-text text-transparent dark:from-white dark:via-zinc-200 dark:to-zinc-500;
+  }
+  .text-gradient-brand {
+    @apply bg-gradient-to-r from-brand-500 via-violet-500 to-cyan-400 bg-clip-text text-transparent;
+  }
+  .bg-grid {
+    background-image: linear-gradient(to right, rgb(120 120 140 / 0.12) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(120 120 140 / 0.12) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+}
+
+.recharts-wrapper,
+.recharts-surface {
+  outline: none;
+}
+.recharts-cartesian-axis-tick-value {
+  @apply fill-zinc-500 text-[11px] dark:fill-zinc-400;
+}
+.recharts-cartesian-grid line {
+  @apply stroke-zinc-200 dark:stroke-white/[0.06];
+}
+.recharts-legend-item-text {
+  @apply !text-zinc-600 dark:!text-zinc-300;
+}

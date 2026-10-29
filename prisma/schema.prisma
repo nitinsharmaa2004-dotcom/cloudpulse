@@ -1,0 +1,135 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+enum CloudProvider {
+  AWS
+  GCP
+  AZURE
+}
+
+enum ConnectionStatus {
+  CONNECTED
+  PENDING
+  ERROR
+}
+
+enum ResourceStatus {
+  RUNNING
+  IDLE
+  UNDERUTILIZED
+  STOPPED
+}
+
+enum AlertType {
+  BUDGET_BREACH
+  COST_SPIKE
+  IDLE_RESOURCE
+  FORECAST_OVERRUN
+}
+
+enum AlertSeverity {
+  CRITICAL
+  WARNING
+  INFO
+}
+
+model User {
+  id            String            @id @default(cuid())
+  name          String
+  email         String            @unique
+  passwordHash  String
+  role          Role              @default(OWNER)
+  company       String?
+  jobTitle      String?
+  monthlyBudget Float             @default(25000)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  connections   CloudConnection[]
+  resources     CloudResource[]
+  costLogs      CostLog[]
+  alerts        Alert[]
+}
+
+model CloudConnection {
+  id           String           @id @default(cuid())
+  userId       String
+  provider     CloudProvider    @default(AWS)
+  name         String
+  accountId    String
+  roleArn      String
+  externalId   String
+  accessKeyHint String?
+  region       String           @default("us-east-1")
+  status       ConnectionStatus @default(PENDING)
+  lastSyncedAt DateTime?
+  createdAt    DateTime         @default(now())
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model CloudResource {
+  id                String         @id @default(cuid())
+  userId            String
+  resourceId        String
+  name              String
+  service           String
+  instanceType      String
+  region            String
+  status            ResourceStatus
+  cpuUtilization    Float
+  memoryUtilization Float?
+  networkGb         Float          @default(0)
+  monthlyCost       Float
+  estimatedSavings  Float          @default(0)
+  recommendation    String?
+  lastActiveAt      DateTime
+  createdAt         DateTime       @default(now())
+  user              User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@index([userId, service])
+}
+
+model CostLog {
+  id      String   @id @default(cuid())
+  userId  String
+  date    DateTime @db.Date
+  service String
+  region  String   @default("us-east-1")
+  amount  Float
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, date])
+  @@index([userId, service, date])
+}
+
+model Alert {
+  id        String        @id @default(cuid())
+  userId    String
+  type      AlertType
+  severity  AlertSeverity
+  title     String
+  message   String
+  service   String?
+  amount    Float?
+  threshold Float?
+  read      Boolean       @default(false)
+  createdAt DateTime      @default(now())
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read, createdAt])
+}
